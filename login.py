@@ -1,7 +1,9 @@
+import os
 import MySQLdb
 from tkinter import *
 from tkinter import messagebox
- 
+os.system('cls') 
+
 # connect to the database
 class MysqlSearch(object):
 	def __init__(self):
