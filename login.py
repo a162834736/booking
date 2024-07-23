@@ -2,11 +2,12 @@ import MySQLdb
 import os
 import time
 import configparser
+import socket
 
 # Read configuration file
 config = configparser.ConfigParser()
 config.read('config.ini')
-
+        
 # Connect to the database
 class MysqlSearch(object):
     def __init__(self):
@@ -15,9 +16,9 @@ class MysqlSearch(object):
  
     # Get connection
     def get_conn(self):
-        os.system('cls')
         print('Connecting to database...')
         try:
+            socket.setdefaulttimeout(7) # Set maximum attempt timeout to 7 seconds
             self.conn = MySQLdb.connect(
                 host=config.get('database', 'host'),
                 user=config.get('database', 'user'),
@@ -25,10 +26,18 @@ class MysqlSearch(object):
                 db=config.get('database', 'db'),
                 charset='utf8'
             )
+        except MySQLdb.OperationalError as e:
+            print(f"Error: {e} \nMake sure you are not connected to school network!")
+            exit(1)
 
-        except MySQLdb.Error as e:
-            print(f'Error: {e}')
-
+        except socket.timeout:
+            print(f"Connection attempt timed out.")
+            exit(1)
+        
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            exit(1)
+    
     # Close connection 
     def close_conn(self):
         if self.conn:
@@ -93,6 +102,7 @@ def login():
     
     if user:
         print("Login successfully.")
+        #TODO: Move user to main menu screen
     else:
         print("Username or password is wrong.\n You will be returned to the main menu")
         time.sleep(2)
@@ -101,11 +111,10 @@ def login():
 def start():
     os.system('cls')
     choice = input("Main Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \n")
+    os.system('cls')
     if choice == "1":
-        os.system('cls')
         login()
     elif choice == "2":
-        os.system('cls')
         register()
     else:
         print('Your input is not valid!')
@@ -115,4 +124,5 @@ def start():
 ### TODO: Create main menu
 
 
-start()
+if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
+    start()
