@@ -77,12 +77,12 @@ class MysqlSearch(object):
             try:
                 cursor.execute(sql_insert, (a, b))
                 self.conn.commit()
-                print("Registration successfully. \nYou will be returned to the main menu \n")
+                print("Registration successfully. \nYou will be returned to the Start menu to login \n")
                 time.sleep(2)
                 start()
             except MySQLdb.Error as e:
                 self.conn.rollback()
-                print(f'Error: {e}\nRegistration failed.')
+                print(f'Error: {e}\nRegistration failed. \nYou will be returned to the Start menu \n')
                 start()
         self.close_conn()
 
@@ -101,28 +101,53 @@ def login():
     user = next((item for item in result if item['username'] == name and item['password'] == pwd), None)
     
     if user:
-        print("Login successfully.")
-        #TODO: Move user to main menu screen
+        user_username = user["username"]
+        print(f"Successfully logged in to \'{user_username}\'. \nYou will be moved to the Main menu")
+        time.sleep(2)
+        main_menu(user_username)
     else:
-        print("Username or password is wrong.\n You will be returned to the main menu")
+        print("Username or password is wrong.\n You will be returned to the Start menu")
         time.sleep(2)
         start()
 
+# Startup menu
 def start():
     os.system('cls')
-    choice = input("Main Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \n")
+    choice = input("Start Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \nEnter \"3\" to exit the program \n")
     os.system('cls')
     if choice == "1":
         login()
     elif choice == "2":
         register()
+    elif choice == "3":
+        print("Good-bye!")
+        time.sleep(1)
+        exit(1)
     else:
         print('Your input is not valid!')
         time.sleep(2)
         start()
 
-### TODO: Create main menu
+### TODO: Main menu
+def main_menu(username):
+    os.system('cls')
+    choice = input(f"Welcome {username}!: \nEnter \"1\" for Check booking status \nEnter \"2\" for Make a booking \nEnter \"3\" to exit the program \n")
+    os.system('cls')
 
+    if choice == "1":
+        #TODO: Check booking service
+        print('1')
+    elif choice == "2":
+        #TODO: Booking service
+        print('2')
+    elif choice == "3":
+        print("Good-bye!")
+        time.sleep(1)
+        exit(1)
+    else:
+        print('Your input is not valid!')
+        time.sleep(2)
+        start()
 
 if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
     start()
