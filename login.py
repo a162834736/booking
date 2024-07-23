@@ -87,12 +87,14 @@ class MysqlSearch(object):
         self.close_conn()
 
 def register():
+    print('Registration menu:')
     register_name = input("Enter a username: \n")
     register_pwd = input("Enter a password: \n")
     obj_r = MysqlSearch()
     obj_r.insert_userinfo(register_name, register_pwd)
 
 def login():
+    print('Login menu:')
     obj = MysqlSearch()
     result = obj.get_userinfo()
     name = input("Enter your username: \n")
