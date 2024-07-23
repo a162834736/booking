@@ -3,8 +3,6 @@ import os
 import time
 import configparser
 
-os.system('cls')
-
 # Read configuration file
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -63,15 +61,15 @@ class MysqlSearch(object):
             cursor.execute(sql_check, (a,))
             if cursor.fetchone():
                 print("User already exists! \nYou will be returned to the main menu \n")
-                time.sleep(1)
+                time.sleep(2)
                 start()
                 return
 
             try:
                 cursor.execute(sql_insert, (a, b))
                 self.conn.commit()
-                print("Registration successfully. You will be returned to the main menu \n")
-                time.sleep(1)
+                print("Registration successfully. \nYou will be returned to the main menu \n")
+                time.sleep(2)
                 start()
             except MySQLdb.Error as e:
                 self.conn.rollback()
@@ -96,17 +94,23 @@ def login():
     if user:
         print("Login successfully.")
     else:
-        print("Username or password wrong.\n You will be returned to the main menu")
-        time.sleep(1)
+        print("Username or password is wrong.\n You will be returned to the main menu")
+        time.sleep(2)
         start()
 
 def start():
-    print("Main Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu")
-    choice = int(input())
-    if choice == 1:
+    os.system('cls')
+    choice = input("Main Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \n")
+    if choice == "1":
+        os.system('cls')
         login()
-    elif choice == 2:
+    elif choice == "2":
+        os.system('cls')
         register()
+    else:
+        print('Your input is not valid!')
+        time.sleep(2)
+        start()
 
 ### TODO: Create main menu
 
