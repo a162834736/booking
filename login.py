@@ -1,8 +1,13 @@
 import MySQLdb
 import os
 import time
+import configparser
 
 os.system('cls')
+
+# Read configuration file
+config = configparser.ConfigParser()
+config.read('config.ini')
 
 # Connect to the database
 class MysqlSearch(object):
@@ -12,18 +17,21 @@ class MysqlSearch(object):
  
     # Get connection
     def get_conn(self):
+        os.system('cls')
+        print('Connecting to database...')
         try:
             self.conn = MySQLdb.connect(
-                host='45.76.177.52',
-                user='root',
-                passwd='ausmat',
-                db='ausmat',
+                host=config.get('database', 'host'),
+                user=config.get('database', 'user'),
+                passwd=config.get('database', 'passwd'),
+                db=config.get('database', 'db'),
                 charset='utf8'
             )
+
         except MySQLdb.Error as e:
             print(f'Error: {e}')
 
-    # Close connection
+    # Close connection 
     def close_conn(self):
         if self.conn:
             try:
@@ -99,5 +107,8 @@ def start():
         login()
     elif choice == 2:
         register()
+
+### TODO: Create main menu
+
 
 start()
