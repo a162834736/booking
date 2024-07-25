@@ -132,11 +132,12 @@ def check(username):
         print("Your bookings:")
         for booking in bookings:
             fac_id = booking['fac_id']
-            print(fac_id)
+            print(f'Facility id booked: {fac_id}')
+            main_menu(username)
     else:
         print("No bookings found.\nYou will be returned to the Main menu \n")
         time.sleep(2)
-        main_menu()
+        main_menu(username)
     
     # Startup menu
 def start():
@@ -161,7 +162,6 @@ def main_menu(username):
     os.system('cls')
     choice = input(f"Welcome {username}!: \nEnter \"1\" for Check booking status \nEnter \"2\" for Make a booking \nEnter \"3\" to exit the program \n")
     os.system('cls')
-
     if choice == "1":
         #TODO: Check booking service
         print('1')
