@@ -9,6 +9,7 @@ config = configparser.ConfigParser()
 config.read('config.ini')
         
 # Connect to the database
+
 class MysqlSearch(object):
     def __init__(self):
         self.conn = None
@@ -86,12 +87,23 @@ class MysqlSearch(object):
                 start()
         self.close_conn()
 
+    def get_user_booking(self, booked_user):
+        sql = 'SELECT * FROM facilities_details WHERE booked_user = %s'
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql, (booked_user,))
+            result = cursor.fetchall()
+            result = [dict(zip([k[0] for k in cursor.description], row)) for row in result]
+        self.close_conn()
+        return result
+
 def register():
     print('Registration menu:')
     register_name = input("Enter a username: \n")
     register_pwd = input("Enter a password: \n")
     obj_r = MysqlSearch()
     obj_r.insert_userinfo(register_name, register_pwd)
+    
+tempuser=str()
 
 def login():
     print('Login menu:')
@@ -112,7 +124,21 @@ def login():
         time.sleep(2)
         start()
 
-# Startup menu
+def check(username):
+    print('Registration menu:')
+    obj_c = MysqlSearch()
+    bookings = obj_c.get_user_booking(username)
+    if bookings:
+        print("Your bookings:")
+        for booking in bookings:
+            fac_id = booking['fac_id']
+            print(fac_id)
+    else:
+        print("No bookings found.\nYou will be returned to the Main menu \n")
+        time.sleep(2)
+        main_menu()
+    
+    # Startup menu
 def start():
     os.system('cls')
     choice = input("Start Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \nEnter \"3\" to exit the program \n")
@@ -139,6 +165,7 @@ def main_menu(username):
     if choice == "1":
         #TODO: Check booking service
         print('1')
+        check(username)
     elif choice == "2":
         #TODO: Booking service
         print('2')
