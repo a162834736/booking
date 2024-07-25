@@ -173,7 +173,10 @@ def main_menu(username):
         print("Good-bye!")
         time.sleep(1)
         exit(1)
-    
+    else:
+        print('Your input is not valid!')
+        time.sleep(2)
+        start()
 
 if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
     start()
