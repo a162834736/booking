@@ -16,15 +16,15 @@ class MysqlSearch(object):
  
     # Get connection
     def get_conn(self):
+        os.system('cls')
         print('Connecting to database...')
         try:
             socket.setdefaulttimeout(7) # Set maximum attempt timeout to 7 seconds
             self.conn = pymysql.connect(
-                host='45.76.177.52',
-                user='root',
-                passwd='ausmat',
-                db='ausmat',
-                charset='utf8'
+                host=config.get('database', 'host'),
+                user=config.get('database', 'user'),
+                passwd=config.get('database', 'passwd'),
+                db=config.get('database', 'db'),
             )
         except pymysql.OperationalError as e:
             print(f"Error: {e} \nMake sure you are not connected to school network!")
@@ -56,7 +56,7 @@ class MysqlSearch(object):
         self.close_conn()
         return result
 
-    # Register
+    # DEFINE REGISTER OUTPUT
     def insert_userinfo(self, a, b):
         if not a or not b:
             print("Registration failed. You will be returned to the main menu \n")
@@ -86,6 +86,7 @@ class MysqlSearch(object):
                 startup_menu()
         self.close_conn()
 
+    #Find user ID in facilities_details to display in bookings:
     def get_user_booking(self, booked_user):
         sql = 'SELECT * FROM facilities_details WHERE booked_user = %s'
         with self.conn.cursor() as cursor:
@@ -94,10 +95,60 @@ class MysqlSearch(object):
             result = [dict(zip([k[0] for k in cursor.description], row)) for row in result]
         self.close_conn()
         return result
+    
+    # GET LIST OF AVAILABLE FACILITIES
+    def get_available_facilities(self):
+        sql = 'SELECT * FROM facilities_details WHERE availability = 1'
+        with self.conn.cursor() as cursor:
+            cursor.execute(sql)
+            result = cursor.fetchall()
+            result = [dict(zip([k[0] for k in cursor.description], row)) for row in result]
+        self.close_conn()
+        return result
+
+    # INSERT BOOKING INTO SQL DATABASE AND UPDATE FACILITY AVAILABILITY
+    def insert_booking(self, fac_id, booked_user):
+        sql_update_user = 'UPDATE facilities_details SET booked_user = %s WHERE fac_id = %s'
+        sql_update_availability = 'UPDATE facilities_details SET availability = 0 WHERE fac_id = %s'
+        with self.conn.cursor() as cursor:
+            try:
+                cursor.execute(sql_update_user, (booked_user, fac_id))
+                cursor.execute(sql_update_availability, (fac_id))
+                self.conn.commit()
+                print(f"Booking successful for {fac_id}! \nYou will be returned to the Main menu!")
+                time.sleep(2)
+                main_menu(booked_user)
+            except pymysql.Error as e:
+                self.conn.rollback()
+                print(f"\nBooking failed. \nError: {e}\nYou will be returned to the Main menu \n")
+                time.sleep(2)
+                main_menu(booked_user)
+        self.close_conn()
+        
 
 
-# Defining variables to be output in Startup Menu
+        #TODO: WTF IS SQL_UPDATE_AVAILABILITY1 AND SQL_UPDATE_USER1 FIX THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    def cancel_booking(self, fac_id, booked_user):
+        sql_update_availability = 'UPDATE facilities_details SET availability = 1 WHERE fac_id = %s AND booked_user = %s'
+        sql_update_user = 'UPDATE facilities_details SET booked_user = NULL WHERE fac_id = %s'
+        try:
+            with self.conn.cursor() as cursor:
+                cursor.execute(sql_update_availability, (fac_id,booked_user))
+                cursor.execute(sql_update_user, (fac_id,))
+                self.conn.commit()
+                print(f"Booking cancelled for facility ID: {fac_id}")
+        except pymysql.Error as e:
+            self.conn.rollback()
+            print(f"Error during cancellation: {e}")
 
+
+#END OF FUNCTION AAAAAAAAAAAAA
+
+
+
+
+
+# DEFINING VARIABLES TO BE OUTPUT IN STARTUP MENU
 # (1) LOGIN
 def login():
     print('Login menu:')
@@ -119,38 +170,23 @@ def login():
         startup_menu()
 
 # (2) REGISTER
+#TODO: UPDATE REGISTER
 def register():
     print('Registration menu:')
     register_name = input("Enter a username: \n")
     register_pwd = input("Enter a password: \n")
     obj_r = MysqlSearch()
     obj_r.insert_userinfo(register_name, register_pwd)
-    
-tempuser=str()
-
-
-# Defining necessary variables to be output in Main Menu:
-# VIEW BOOKINGS
-def check(username):
-    print('Registration menu:')
-    obj_c = MysqlSearch()
-    bookings = obj_c.get_user_booking(username)
-    if bookings:
-        print("Your bookings:")
-        for booking in bookings:
-            fac_id = booking['fac_id']
-            print(f'Facility id booked: {fac_id}')
-            main_menu(username)
-    else:
-        print("No bookings found.\nYou will be returned to the Main menu \n")
-        time.sleep(2)
-        main_menu(username)
 
 
 # STARTUP MENU
 def startup_menu():
     os.system('cls')
-    choice = input("Start Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \nEnter \"3\" to exit the program \n")
+    print("Start Menu:")
+    print("Enter [1] for Login Menu")
+    print("Enter [2] for Registration Menu")
+    print("Enter [3] to exit the program")
+    choice = input()
     os.system('cls')
     if choice == "1":
         login()
@@ -165,18 +201,82 @@ def startup_menu():
         time.sleep(2)
         startup_menu()
 
-### TODO: Main menu
+
+# DEFINING NECESSARY VARIABLES TO BE OUTPUT IN MAIN MENU
+# (1) VIEW BOOKINGS
+def check_bookings(username):
+    print('Registration menu:')
+    obj_c = MysqlSearch()
+    bookings = obj_c.get_user_booking(username)
+    tempuser=username
+    if bookings:
+        print("Your bookings:")
+        for booking in bookings: #TODO: WHO THE FUCK MADE THIS FOR LOOP IN SUCH A CONFUSING WAY, FOR BOOKING IN BOOKING(S)?! THAT WILL CONFUSE ANY PROGAMMERS READING THIS SHIT!!! SHIT CODE FIX THIS.
+            fac_id = booking['fac_id']
+            print(f'Facility id booked: {fac_id}')
+            time.sleep(0.2)
+        input('Press [ENTER] to continue \n')
+
+        
+       # CANCEL BOOKING FEATURE
+        kylefarr = str(input("Do you want to cancel any bookings? [Y/N]: "))
+        #TODO: kylefarr?! ARE YOU KIDDING ME TELL ME WHO CODED THIS MONSTROSITY, THIS IS NOT READABLE FOR A AVERAGE HUMAN PROGAMMER IF ITS ONLY REFERED TO AS CHOICE1, COMPLETELY UNPROFESSIONAL BEHAVIOUR I EXPECTED FROM A GROUP OF PAID EXPERT COMPUTER SCIENCE PROGAMMERS; UNBELIVEABLE. HAVE THIS FIXED IMMEDIETLY AND MEET ME AT MY OFFICE AT THIS INSTANCE BEFORE THIS CODE GETS PARSED AND PUSHED TO GITHUB. 
+        if kylefarr=="Y":
+            cancellation = str(input("Please enter the id of the facility you wish to cancel your booking for: "))
+
+
+            obj_c.cancel_booking(tempuser,cancellation)
+
+            print(f"You have cancelled the booking for {cancellation}. Returning to Main Menu...")
+            time.sleep(3)
+            main_menu(tempuser)
+        else:
+            print("You will be returned to the Main menu") 
+            time.sleep(3)
+            main_menu(tempuser)
+            
+    else:
+        print("No bookings found.\nYou will be returned to the Main menu \n")
+        input('Press [ENTER] to continue \n')
+        main_menu(username)
+
+# (2) MAKE A BOOKING
+def make_booking(username):
+    obj_m = MysqlSearch()
+    result2 = obj_m.get_available_facilities() #TODO: change result2 to smtg else
+    print('Available facilities:')
+    #TODO: Print available facilities
+    fac_id_input = str(input("Enter the id of the facility you want to book: \n"))
+
+    
+    if any(facility['fac_id'] == fac_id_input for facility in result2):
+        confirmation = input("Are you sure you want to book this facility? [Y/N]: \n")
+        if confirmation == 'Y':
+            obj_b = MysqlSearch()
+            obj_b.insert_booking(fac_id_input, username)
+            
+        else:
+            print("Booking cancelled. You will be returned to the Main Menu.")
+            input('Press [ENTER] to continue \n')
+            main_menu(username)
+    else:
+        print("Booking unsuccessful: INVALID ID.\nYou will be returned to the Main menu.")
+        time.sleep(2)
+        main_menu(username)
+
 def main_menu(username):
     os.system('cls')
-    choice = input(f"Welcome {username}!: \nEnter \"1\" for Check booking status \nEnter \"2\" for Make a booking \nEnter \"3\" to exit the program \n")
+
+    print(f"Welcome {username}!:")
+    print("Enter [1] for Check booking status")
+    print("Enter [2] for Make a booking")
+    print("Enter [3] to exit the program")
+    choice = input()
     os.system('cls')
     if choice == "1":
-        #TODO: Check booking service
-        print('1')
-        check(username)
+        check_bookings(username)
     elif choice == "2":
-        #TODO: Booking service
-        print('2')
+        make_booking(username)
     elif choice == "3":
         print("Good-bye!")
         time.sleep(1)
@@ -184,7 +284,7 @@ def main_menu(username):
     else:
         print('Your input is not valid!')
         time.sleep(2)
-        startup_menu()
+        main_menu(username)
 
 if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
     startup_menu()
