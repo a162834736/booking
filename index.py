@@ -1,4 +1,4 @@
-import MySQLdb
+import pymysql
 import os
 import time
 import configparser
@@ -8,8 +8,7 @@ import socket
 config = configparser.ConfigParser()
 config.read('config.ini')
         
-# Connect to the database
-
+# Connect to the SQL database
 class MysqlSearch(object):
     def __init__(self):
         self.conn = None
@@ -20,14 +19,14 @@ class MysqlSearch(object):
         print('Connecting to database...')
         try:
             socket.setdefaulttimeout(7) # Set maximum attempt timeout to 7 seconds
-            self.conn = MySQLdb.connect(
-                host=config.get('database', 'host'),
-                user=config.get('database', 'user'),
-                passwd=config.get('database', 'passwd'),
-                db=config.get('database', 'db'),
+            self.conn = pymysql.connect(
+                host='45.76.177.52',
+                user='root',
+                passwd='ausmat',
+                db='ausmat',
                 charset='utf8'
             )
-        except MySQLdb.OperationalError as e:
+        except pymysql.OperationalError as e:
             print(f"Error: {e} \nMake sure you are not connected to school network!")
             exit(1)
 
@@ -44,10 +43,10 @@ class MysqlSearch(object):
         if self.conn:
             try:
                 self.conn.close()
-            except MySQLdb.Error as e:
+            except pymysql.Error as e:
                 print(f'Error: {e}')
 
-    # Get user info
+    # Get user info from database
     def get_userinfo(self):
         sql = 'SELECT * FROM user'
         with self.conn.cursor() as cursor:
@@ -62,7 +61,7 @@ class MysqlSearch(object):
         if not a or not b:
             print("Registration failed. You will be returned to the main menu \n")
             time.sleep(1)
-            start()
+            startup_menu()
             return
 
         sql_check = 'SELECT username FROM user WHERE username = %s'
@@ -72,19 +71,19 @@ class MysqlSearch(object):
             if cursor.fetchone():
                 print("User already exists! \nYou will be returned to the main menu \n")
                 time.sleep(2)
-                start()
+                startup_menu()
                 return
 
             try:
                 cursor.execute(sql_insert, (a, b))
                 self.conn.commit()
-                print("Registration successfully. \nYou will be returned to the Start menu to login \n")
+                print("Registration successful. \nYou will be returned to the Start menu to login \n")
                 time.sleep(2)
-                start()
-            except MySQLdb.Error as e:
+                startup_menu()
+            except pymysql.Error as e:
                 self.conn.rollback()
                 print(f'Error: {e}\nRegistration failed. \nYou will be returned to the Start menu \n')
-                start()
+                startup_menu()
         self.close_conn()
 
     def get_user_booking(self, booked_user):
@@ -96,15 +95,10 @@ class MysqlSearch(object):
         self.close_conn()
         return result
 
-def register():
-    print('Registration menu:')
-    register_name = input("Enter a username: \n")
-    register_pwd = input("Enter a password: \n")
-    obj_r = MysqlSearch()
-    obj_r.insert_userinfo(register_name, register_pwd)
-    
-tempuser=str()
 
+# Defining variables to be output in Startup Menu
+
+# (1) LOGIN
 def login():
     print('Login menu:')
     obj = MysqlSearch()
@@ -122,8 +116,21 @@ def login():
     else:
         print("Username or password is wrong.\n You will be returned to the Start menu")
         time.sleep(2)
-        start()
+        startup_menu()
 
+# (2) REGISTER
+def register():
+    print('Registration menu:')
+    register_name = input("Enter a username: \n")
+    register_pwd = input("Enter a password: \n")
+    obj_r = MysqlSearch()
+    obj_r.insert_userinfo(register_name, register_pwd)
+    
+tempuser=str()
+
+
+# Defining necessary variables to be output in Main Menu:
+# VIEW BOOKINGS
 def check(username):
     print('Registration menu:')
     obj_c = MysqlSearch()
@@ -138,9 +145,10 @@ def check(username):
         print("No bookings found.\nYou will be returned to the Main menu \n")
         time.sleep(2)
         main_menu(username)
-    
-    # Startup menu
-def start():
+
+
+# STARTUP MENU
+def startup_menu():
     os.system('cls')
     choice = input("Start Menu: \nEnter \"1\" for Login Menu \nEnter \"2\" for Registration Menu \nEnter \"3\" to exit the program \n")
     os.system('cls')
@@ -155,7 +163,7 @@ def start():
     else:
         print('Your input is not valid!')
         time.sleep(2)
-        start()
+        startup_menu()
 
 ### TODO: Main menu
 def main_menu(username):
@@ -176,7 +184,7 @@ def main_menu(username):
     else:
         print('Your input is not valid!')
         time.sleep(2)
-        start()
+        startup_menu()
 
 if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
-    start()
+    startup_menu()
