@@ -13,10 +13,10 @@ class MysqlSearch:
         print('Connecting to database...')
         try:
             self.conn = pymysql.connect(
-                host='host',
-                user='user',
-                passwd='passwd',
-                db='db',
+                host='',
+                user='',
+                passwd='',
+                db='',
                 connect_timeout=7
             )
         except pymysql.OperationalError as e:
@@ -149,19 +149,27 @@ def check_bookings(username):
     bookings = db.get_user_booking(username)
     if bookings:
         print("Your bookings:")
+        fac_list = []
         for booking in bookings:
             fac_id = booking['fac_id']
             print(f'Facility id booked: {fac_id}')
             time.sleep(0.2)
+            fac_list.append(fac_id)
         input('Press [ENTER] to continue \n')
 
         cancel = input("Do you want to cancel any bookings? [Y/N]: ")
         if cancel == "Y":
             cancellation = input("Please enter the id of the facility you wish to cancel your booking for: ")
-            db.cancel_booking(cancellation,username)
-            print(f"You have cancelled the booking for {cancellation}. Returning to Main Menu...")
-            time.sleep(3)
-            main_menu(username)
+            if cancellation in fac_list:
+                
+                db.cancel_booking(cancellation,username)
+                print(f"You have cancelled the booking for {cancellation}. Returning to Main Menu...")
+                time.sleep(3)
+                main_menu(username)
+            else:
+                print("Your input is invalid, Returning to Main Menu...")
+                time.sleep(3)
+                main_menu(username)
         else:
             print("You will be returned to the Main menu")
             time.sleep(3)
@@ -177,7 +185,11 @@ def make_booking(username):
     print('Available facilities:')
     for facility in available_facilities:
         fac_id = facility['fac_id']
-        print(f'Facility ID: {fac_id}')
+        fac_type = facility['fac_type']
+        fac_floor = facility['fac_floor']
+        fac_capacity = facility['fac_capacity']
+        print(f'Facility ID: {fac_id},  Facility type: {fac_type},  Facility floor: {fac_floor},  Facility capacity: {fac_capacity} \n')
+        time.sleep(0.2)
 
     fac_id_input = input("Enter the id of the facility you want to book: \n")
 
