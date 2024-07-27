@@ -13,10 +13,10 @@ class MysqlSearch:
         print('Connecting to database...')
         try:
             self.conn = pymysql.connect(
-                host='45.76.177.52',
-                user='root',
-                passwd='ausmat',
-                db='ausmat',
+                host='host',
+                user='user',
+                passwd='passwd',
+                db='db',
                 connect_timeout=7
             )
         except pymysql.OperationalError as e:
