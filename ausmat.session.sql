@@ -1,1 +1,0 @@
-UPDATE facilities_details SET availability = 1 WHERE fac_id = 'NW-1-0A'
