@@ -141,25 +141,24 @@ def check_bookings(username):
             fac_list.append(fac_id)
         input('Press [ENTER] to continue \n')
 
-        cancel = input("Do you want to cancel any bookings? [Y/N]: ")
+        cancel = input("Do you want to cancel any bookings? [Y/N]: ").upper()
         if cancel == "Y":
             cancellation = input("Please enter the id of the facility you wish to cancel your booking for: ")
             if cancellation in fac_list:
-                
                 db.cancel_booking(cancellation,username)
-                print(f"You have cancelled the booking for {cancellation}. Returning to Main Menu...")
-                time.sleep(3)
+                print(f"You have cancelled the booking for {cancellation}. \nYou will be returned to the Main menu...")
+                time.sleep(2)
                 main_menu(username)
-            else:
+            else: # If No then
                 print("Your input is invalid, Returning to Main Menu...")
-                time.sleep(3)
+                time.sleep(2)
                 main_menu(username)
         else:
             print("You will be returned to the Main menu")
-            time.sleep(3)
+            time.sleep(2)
             main_menu(username)
     else:
-        print("No bookings found.\nYou will be returned to the Main menu \n")
+        print("No bookings found. \nYou will be returned to the Main menu...")
         input('Press [ENTER] to continue \n')
         main_menu(username)
 
@@ -178,7 +177,7 @@ def make_booking(username):
     fac_id_input = input("Enter the id of the facility you want to book: \n")
 
     if any(facility['fac_id'] == fac_id_input for facility in available_facilities):
-        confirmation = input("Are you sure you want to book this facility? [Y/N]: \n")
+        confirmation = input("Are you sure you want to book this facility? [Y/N]: \n").upper()
         if confirmation == 'Y':
             db.insert_booking(fac_id_input, username)
             print("Booking Successful!")
