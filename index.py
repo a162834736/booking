@@ -1,3 +1,4 @@
+'''
 import pymysql
 import os
 import time
@@ -285,6 +286,7 @@ def main_menu(username):
         print('Your input is not valid!')
         time.sleep(2)
         main_menu(username)
+'''
 
 if __name__ == "__main__": # Ensure that certain code is only executed when the script is run directly
     startup_menu()
