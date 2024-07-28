@@ -3,7 +3,11 @@ import os
 import time
 import configparser
 import socket
-# 连接数据库
+
+# Read configuration file
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 class MysqlSearch:
     def __init__(self):
         self.conn = None
@@ -13,11 +17,10 @@ class MysqlSearch:
         print('Connecting to database...')
         try:
             self.conn = pymysql.connect(
-                host='',
-                user='',
-                passwd='',
-                db='',
-                connect_timeout=7
+                host=config.get('database', 'host'),
+                user=config.get('database', 'user'),
+                passwd=config.get('database', 'passwd'),
+                db=config.get('database', 'db'),
             )
         except pymysql.OperationalError as e:
             print(f"Error: {e} \nMake sure you are not connected to the school network!")
@@ -90,11 +93,13 @@ class MysqlSearch:
                 cursor.execute(sql_update_user, (fac_id,))
                 self.conn.commit()
                 print(f"Booking cancelled for facility ID: {fac_id}")
+                input('Press [ENTER] to continue to the Main Menu\n')
+                main_menu(booked_user)
         except pymysql.Error as e:
             self.conn.rollback()
             print(f"Error during cancellation: {e}")
+# End of class MysqlSearch
 
-# 用户交互函数
 def login():
     print('Login menu:')
     db = MysqlSearch()
@@ -122,6 +127,74 @@ def register():
     db.insert_userinfo(register_name, register_pwd)
     startup_menu()
 
+# Check Booking and Cancel Bookings
+def check_bookings(username):
+    print('Your bookings:')
+    db = MysqlSearch()
+    bookings = db.get_user_booking(username)
+    if bookings:
+        print("Your bookings:")
+        fac_list = []
+        for booking in bookings:
+            fac_id = booking['fac_id']
+            print(f'Facility id booked: {fac_id}')
+            time.sleep(0.2)
+            fac_list.append(fac_id)
+        input('Press [ENTER] to continue \n')
+
+        cancel = input("Do you want to cancel any bookings? [Y/N]: ").upper()
+        if cancel == "Y":
+            cancellation = input("Please enter the id of the facility you wish to cancel your booking for: ")
+            if cancellation in fac_list:
+                db.cancel_booking(cancellation,username)
+                print(f"You have cancelled the booking for {cancellation}. \nYou will be returned to the Main menu...")
+                time.sleep(2)
+                main_menu(username)
+            else:
+                print("The facility id you entered dosen\'t seem valid. \n You will be returned to Main Menu...")
+                time.sleep(3)
+                main_menu(username)
+        else:
+            print("You will be returned to the Main menu")
+            time.sleep(2)
+            main_menu(username)
+    else:
+        print("No bookings found. \nYou will be returned to the Main menu...")
+        input('Press [ENTER] to continue \n')
+        main_menu(username)
+
+def make_booking(username):
+    db = MysqlSearch()
+    available_facilities = db.get_available_facilities()
+    print('Available facilities:')
+    for facility in available_facilities:
+        fac_id = facility['fac_id']
+        fac_type = facility['fac_type']
+        fac_floor = facility['fac_floor']
+        fac_capacity = facility['fac_capacity']
+        # This print function will equally space out each column so it is alot more neater for users to actually see and easily compare.
+        print(f'Facility ID: {fac_id:>10},  Facility type: {fac_type:<10},  Facility floor: {fac_floor:>2},  Facility capacity: {fac_capacity:>3}')
+        time.sleep(0.2)
+
+    fac_id_input = input("Enter the id of the facility you want to book: \n")
+
+    if any(facility['fac_id'] == fac_id_input for facility in available_facilities):
+        confirmation = input("Are you sure you want to book this facility? [Y/N]: \n").upper()
+        if confirmation == 'Y':
+            db.insert_booking(fac_id_input, username)
+            print("Booking Successful!")
+            input('Press [ENTER] to continue to the Main Menu\n')
+            main_menu(username)
+        else:
+            print("Booking process cancelled!")
+            input('Press [ENTER] to continue to the Main Menu\n')
+            main_menu(username)
+    else:
+        print("Booking unsuccessful: INVALID ID.")
+        input('Press [ENTER] to continue to the Main Menu\n')
+        main_menu(username)
+
+
 def startup_menu():
     os.system('cls')
     print("Start Menu:")
@@ -143,79 +216,17 @@ def startup_menu():
         time.sleep(2)
         startup_menu()
 
-def check_bookings(username):
-    print('Your bookings:')
-    db = MysqlSearch()
-    bookings = db.get_user_booking(username)
-    if bookings:
-        print("Your bookings:")
-        fac_list = []
-        for booking in bookings:
-            fac_id = booking['fac_id']
-            print(f'Facility id booked: {fac_id}')
-            time.sleep(0.2)
-            fac_list.append(fac_id)
-        input('Press [ENTER] to continue \n')
-
-        cancel = input("Do you want to cancel any bookings? [Y/N]: ")
-        if cancel == "Y":
-            cancellation = input("Please enter the id of the facility you wish to cancel your booking for: ")
-            if cancellation in fac_list:
-                
-                db.cancel_booking(cancellation,username)
-                print(f"You have cancelled the booking for {cancellation}. Returning to Main Menu...")
-                time.sleep(3)
-                main_menu(username)
-            else:
-                print("Your input is invalid, Returning to Main Menu...")
-                time.sleep(3)
-                main_menu(username)
-        else:
-            print("You will be returned to the Main menu")
-            time.sleep(3)
-            main_menu(username)
-    else:
-        print("No bookings found.\nYou will be returned to the Main menu \n")
-        input('Press [ENTER] to continue \n')
-        main_menu(username)
-
-def make_booking(username):
-    db = MysqlSearch()
-    available_facilities = db.get_available_facilities()
-    print('Available facilities:')
-    for facility in available_facilities:
-        fac_id = facility['fac_id']
-        fac_type = facility['fac_type']
-        fac_floor = facility['fac_floor']
-        fac_capacity = facility['fac_capacity']
-        print(f'Facility ID: {fac_id},  Facility type: {fac_type},  Facility floor: {fac_floor},  Facility capacity: {fac_capacity} \n')
-        time.sleep(0.2)
-
-    fac_id_input = input("Enter the id of the facility you want to book: \n")
-
-    if any(facility['fac_id'] == fac_id_input for facility in available_facilities):
-        confirmation = input("Are you sure you want to book this facility? [Y/N]: \n")
-        if confirmation == 'Y':
-            db.insert_booking(fac_id_input, username)
-            time.sleep(2)
-            main_menu(username)
-        else:
-            print("Booking cancelled. You will be returned to the Main Menu.")
-            input('Press [ENTER] to continue \n')
-            main_menu(username)
-    else:
-        print("Booking unsuccessful: INVALID ID.\nYou will be returned to the Main menu.")
-        time.sleep(2)
-        main_menu(username)
-
 def main_menu(username):
     os.system('cls')
     print(f"Welcome {username}!")
-    print("Enter [1] for Check booking status")
-    print("Enter [2] for Make a booking")
-    print("Enter [3] to exit the program")
+    print("Enter [1] to Check your bookings")
+    print("Enter [2] to Make a booking")
+    print("Enter [3] to Exit the program")
+
     choice = input()
+    
     os.system('cls')
+    
     if choice == "1":
         check_bookings(username)
     elif choice == "2":
