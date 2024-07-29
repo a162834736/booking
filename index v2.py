@@ -4,23 +4,32 @@ import time
 import configparser
 import socket
 
-# Read configuration file
+# Read configuration file for SQL host, user, password, database.
 config = configparser.ConfigParser()
 config.read('config.ini')
 
+# Using class to provide more modularity to the code.
+# Most of this code here is to connect and compare to the database.
+
 class MysqlSearch:
+    # If initialized, will attempt to connect to Database
     def __init__(self):
         self.conn = None
         self.get_conn()
 
+
     def get_conn(self):
         print('Connecting to database...')
         try:
+
+            socket.setdefaulttimeout(7)
+
             self.conn = pymysql.connect(
                 host=config.get('database', 'host'),
                 user=config.get('database', 'user'),
-                passwd=config.get('database', 'passwd'),
-                db=config.get('database', 'db'),
+                password=config.get('database', 'passwd'),
+                database=config.get('database', 'db'),
+                connect_timeout=7
             )
         except pymysql.OperationalError as e:
             print(f"Error: {e} \nMake sure you are not connected to the school network!")
@@ -100,11 +109,16 @@ class MysqlSearch:
             print(f"Error during cancellation: {e}")
 # End of class MysqlSearch
 
+# User inserts their Student ID and Password
+# It will be compared against the database
+# If both is correct then user will be logged in and redirected to Main Menu
+# If either is wrong, user will be redirected back to the Startup page.
+
 def login():
     print('Login menu:')
     db = MysqlSearch()
     result = db.get_userinfo()
-    name = input("Enter your username: \n")
+    name = input("Enter your Student ID: \n")
     pwd = input("Enter your password: \n")
 
     user = next((item for item in result if item['username'] == name and item['password'] == pwd), None)
@@ -121,13 +135,16 @@ def login():
 
 def register():
     print('Registration menu:')
-    register_name = input("Enter a username: \n")
+    register_name = input("Enter your Student ID: \n")
     register_pwd = input("Enter a password: \n")
     db = MysqlSearch()
     db.insert_userinfo(register_name, register_pwd)
     startup_menu()
 
-# Check Booking and Cancel Bookings
+# Check Booking users existing booking and lists them
+# From their bookings user will be given a choice to cancel their booking using the Facility ID
+# If user keys in a Facility ID they that isnt their booking, cancellation will not proceed.
+
 def check_bookings(username):
     print('Your bookings:')
     db = MysqlSearch()
@@ -163,6 +180,11 @@ def check_bookings(username):
         input('Press [ENTER] to continue \n')
         main_menu(username)
 
+# Lists out all available facilities
+# User selects an available facility from the list
+# If facility is not available, user will not be able to book facility
+# After user confirms booking, database will be updated.
+
 def make_booking(username):
     db = MysqlSearch()
     available_facilities = db.get_available_facilities()
@@ -172,7 +194,8 @@ def make_booking(username):
         fac_type = facility['fac_type']
         fac_floor = facility['fac_floor']
         fac_capacity = facility['fac_capacity']
-        # This print function will equally space out each column so it is alot more neater for users to actually see and easily compare.
+
+        # This print function will equally space out each column so that it is alot more neater for users to actually see and easily compare.
         print(f'Facility ID: {fac_id:>10},  Facility type: {fac_type:<10},  Facility floor: {fac_floor:>2},  Facility capacity: {fac_capacity:>3}')
         time.sleep(0.2)
 
@@ -194,7 +217,7 @@ def make_booking(username):
         input('Press [ENTER] to continue to the Main Menu\n')
         main_menu(username)
 
-
+# Prints the Start Menu
 def startup_menu():
     os.system('cls')
     print("Start Menu:")
@@ -216,6 +239,7 @@ def startup_menu():
         time.sleep(2)
         startup_menu()
 
+# Prints the Main Menu
 def main_menu(username):
     os.system('cls')
     print(f"Welcome {username}!")
@@ -240,5 +264,7 @@ def main_menu(username):
         time.sleep(2)
         main_menu(username)
 
+
+# All this line of code does is check if it is being ran as a script and not a module and runs the startup menu :)
 if __name__ == "__main__":
     startup_menu()
