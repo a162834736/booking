@@ -233,7 +233,7 @@ def make_booking(username):
         fac_floor = facility['fac_floor']
         fac_capacity = facility['fac_capacity']
 
-        # This print function will equally space out each column so that it is alot more neater for users to actually see and easily compare.
+        # This print function will equally space out each column so that it is a lot more neater for users to actually see and easily compare.
         print(f'Facility ID: {fac_id:>10},  Facility type: {fac_type:<10},  Facility floor: {fac_floor:>2},  Facility capacity: {fac_capacity:>3}')
         time.sleep(0.2)
 
