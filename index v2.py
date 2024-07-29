@@ -89,7 +89,9 @@ class MysqlSearch:
 
                 cursor.execute(sql_insert, (username, password))
                 self.conn.commit()
-                print("Registration successful.")
+                print("Registration successful!")
+                return
+
         except pymysql.Error as e:
             self.conn.rollback()
             print(f"Error during registration: {e}")
@@ -162,12 +164,19 @@ def login():
         time.sleep(2)
         startup_menu()
 
+# User inputs Student ID and Password
+# Inputs are then compared to database
+# If user already exists, registration will be cancelled
+# If user doesn't exist, registration will be proceeded
+# User will be then redirected to startup menu to login
+
 def register():
     print('Registration menu:')
     register_name = input("Enter your Student ID: \n")
     register_pwd = input("Enter a password: \n")
     db = MysqlSearch()
     db.insert_userinfo(register_name, register_pwd)
+    time.sleep(3)
     startup_menu()
 
 # Check Booking users existing booking and lists them
