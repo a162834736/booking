@@ -4,6 +4,17 @@ import time
 import configparser
 import socket
 
+'''
+startup_menu() = startup men
+login() = login function
+register() = register function
+check_bookings() = view available bookings
+make_booking() = make a booking
+cancel_booking() = cancel a booking
+
+
+'''
+
 # Read configuration file for SQL host, user, password, database.
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -50,6 +61,21 @@ class MysqlSearch:
         with self.conn.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(sql)
             return cursor.fetchall()
+        
+    def get_studentinfo(self, username):
+        sql = 'SELECT stu_name FROM students WHERE stu_id = %s' 
+        try:
+            with self.conn.cursor(pymysql.cursors.DictCursor) as cursor:
+                cursor.execute(sql, (username,))
+                fetched_StuName = cursor.fetchall()
+                if fetched_StuName:
+                    fetched_StuName = fetched_StuName[0]['stu_name']
+                    return(fetched_StuName)
+                else:
+                    return(username)
+        
+        except pymysql.Error :
+            self.conn.rollback()
 
     def insert_userinfo(self, username, password):
         sql_check = 'SELECT * FROM user WHERE username = %s'
@@ -124,10 +150,13 @@ def login():
     user = next((item for item in result if item['username'] == name and item['password'] == pwd), None)
 
     if user:
+        
         user_username = user["username"]
-        print(f"Successfully logged in to '{user_username}'. \nYou will be moved to the Main menu")
+        StuName = db.get_studentinfo(user_username)
+        
+        print(f"Successfully logged in to '{StuName}'. \nYou will be moved to the Main menu")
         time.sleep(2)
-        main_menu(user_username)
+        main_menu(StuName)
     else:
         print("Username or password is wrong.\n You will be returned to the Start menu")
         time.sleep(2)
