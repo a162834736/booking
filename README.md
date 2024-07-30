@@ -5,6 +5,7 @@ This is a project under the AUSMAT Program under GTCSC Group 9.
 
 - [Installation](#steps)
 - [Usage](#usage)
+- [Troubleshooting](#troubleshooting)
 
 ## Installation
 
@@ -28,6 +29,10 @@ This is a project under the AUSMAT Program under GTCSC Group 9.
     pip install -r requirements.txt
     ```
 
+3. Insert database details:
+   
+   Edit the ```config.ini``` file with your database details.
+   
 ### Usage
 
 Running the script:
@@ -36,4 +41,12 @@ Running the script:
    python index v2.py
    ```
 
+### Troubleshooting
+
+Script getting stuck at ```Connecting to database```:
+    **Explaination:**
+    This usually happens when a connection is being blocked by a network filter.
+    **Solution:**
+    If you're on a organization network, consider using your personal hotspot or a VPN.
+    
 **THE END!**
