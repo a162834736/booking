@@ -18,7 +18,7 @@ This is a project under the AUSMAT Program under GTCSC Group 9.
 1. Clone the repository:
 
     ```bash
-    git clone https://github.com/yourusername/your-repo-name.git
+    git clone https://github.com/a162834736/booking.git
     cd your-repo-name
     ```
 
