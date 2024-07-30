@@ -20,7 +20,7 @@ This is a project under the AUSMAT Program under GTCSC Group 9.
 
     ```bash
     git clone https://github.com/a162834736/booking.git
-    cd your-repo-name
+    cd booking
     ```
 
 2. Install the required packages:
