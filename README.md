@@ -49,4 +49,4 @@ Script getting stuck at ```Connecting to database```:
     **Solution:**
     If you're on a organization network, consider using your personal hotspot or a VPN.
     
-**THE END!**
+##**THE END!**
