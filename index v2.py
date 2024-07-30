@@ -5,7 +5,7 @@ import configparser
 import socket
 
 '''
-startup_menu() = startup men
+startup_menu() = startup menu
 login() = login function
 register() = register function
 check_bookings() = view available bookings
