@@ -1,5 +1,5 @@
-## Introduction
-This is a project under the AUSMAT Program under GTCSC Group 9.
+## Facility Booking System
+Welcome to the Facility Booking System project, developed as part of the AUSMAT Program under GTCSC Group 9. This project provides a comprehensive solution for booking facilities using a MySQL database.
 
 ## Table of Contents
 
@@ -49,4 +49,4 @@ Script getting stuck at ```Connecting to database```:
     **Solution:**
     If you're on a organization network, consider using your personal hotspot or a VPN.
     
-##**THE END!**
+## **THE END!**
